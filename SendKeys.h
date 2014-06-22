@@ -3,12 +3,15 @@
 
 #include <windows.h>
 #include <tchar.h>
+
 // Please see SendKeys.cpp for copyright and usage issues.
 
+//-------------------------------------------------------------------------
 class CSendKeys
 {
 private:
-  bool m_bWait, m_bUsingParens, m_bShiftDown, m_bAltDown, m_bControlDown, m_bWinDown;
+  bool m_bWait, m_bUsingParens, m_bShiftDown, 
+       m_bAltDown, m_bControlDown, m_bWinDown;
   DWORD  m_nDelayAlways, m_nDelayNow;
 
   static BOOL CALLBACK enumwindowsProc(HWND hwnd, LPARAM lParam);
@@ -50,10 +53,10 @@ private:
   static const WORD VKKEYSCANALTON;
   static const WORD INVALIDKEY;
 
-  static key_desc_t KeyNames[MaxSendKeysRecs]; 
+  static const key_desc_t KeyNames[MaxSendKeysRecs]; 
   static const BYTE ExtendedVKeys[MaxExtendedVKeys];
 
-  static bool BitSet(BYTE BitTable, UINT BitMask);
+  static inline bool BitSet(BYTE BitTable, UINT BitMask);
 
   void PopUpShiftKeys();
 

@@ -2,7 +2,7 @@
 
 /* 
 * ----------------------------------------------------------------------------- 
-* Copyright (c) 2004 lallous <lallousx86@yahoo.com>
+* Copyright (c) 2004 Elias Bachaalany <lallousz-x86@yahoo.com>
 * All rights reserved.
 * 
 * Redistribution and use in source and binary forms, with or without
@@ -59,11 +59,13 @@ Todo
 
 */
 
+//-------------------------------------------------------------------------
 const WORD CSendKeys::VKKEYSCANSHIFTON = 0x01;
 const WORD CSendKeys::VKKEYSCANCTRLON  = 0x02;
 const WORD CSendKeys::VKKEYSCANALTON   = 0x04;
 const WORD CSendKeys::INVALIDKEY       = 0xFFFF;
 
+//-------------------------------------------------------------------------
 const BYTE CSendKeys::ExtendedVKeys[MaxExtendedVKeys] =
 {
     VK_UP, 
@@ -78,11 +80,13 @@ const BYTE CSendKeys::ExtendedVKeys[MaxExtendedVKeys] =
     VK_DELETE
 };
 
+//-------------------------------------------------------------------------
 CSendKeys::CSendKeys()
 {
   m_nDelayNow = m_nDelayAlways = 0;
 }
 
+//-------------------------------------------------------------------------
 // Delphi port regexps:
 // ---------------------
 // search: .+Name:'([^']+)'.+vkey:([^\)]+)\)
@@ -91,7 +95,7 @@ CSendKeys::CSendKeys()
 // **If you add to this list, you must be sure to keep it sorted alphabetically
 // by Name because a binary search routine is used to scan it.**
 //
-CSendKeys::key_desc_t CSendKeys::KeyNames[CSendKeys::MaxSendKeysRecs] = 
+const CSendKeys::key_desc_t CSendKeys::KeyNames[CSendKeys::MaxSendKeysRecs] = 
 {
   {_T("ADD"), VK_ADD}, 
   {_T("APPS"), VK_APPS},
@@ -166,16 +170,15 @@ CSendKeys::key_desc_t CSendKeys::KeyNames[CSendKeys::MaxSendKeysRecs] =
   {_T("WIN"), VK_LWIN}
 };
 
-
+//-------------------------------------------------------------------------
 // calls keybd_event() and waits, if needed, till the sent input is processed
 void CSendKeys::KeyboardEvent(BYTE VKey, BYTE ScanCode, LONG Flags)
 {
-  MSG KeyboardMsg;
-
   keybd_event(VKey, ScanCode, Flags, 0);
 
   if (m_bWait)
   {
+    MSG KeyboardMsg;
     while (::PeekMessage(&KeyboardMsg, 0, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
     {
       ::TranslateMessage(&KeyboardMsg);
@@ -184,6 +187,7 @@ void CSendKeys::KeyboardEvent(BYTE VKey, BYTE ScanCode, LONG Flags)
   }
 }
 
+//-------------------------------------------------------------------------
 // Checks whether the specified VKey is an extended key or not
 bool CSendKeys::IsVkExtended(BYTE VKey)
 {
@@ -195,6 +199,7 @@ bool CSendKeys::IsVkExtended(BYTE VKey)
   return false;
 }
 
+//-------------------------------------------------------------------------
 // Generates KEYUP
 void CSendKeys::SendKeyUp(BYTE VKey)
 {
@@ -205,6 +210,7 @@ void CSendKeys::SendKeyUp(BYTE VKey)
                 KEYEVENTF_KEYUP | (IsVkExtended(VKey) ? KEYEVENTF_EXTENDEDKEY : 0));
 }
 
+//-------------------------------------------------------------------------
 void CSendKeys::SendKeyDown(BYTE VKey, WORD NumTimes, bool GenUpMsg, bool bDelay)
 {
   WORD Cnt = 0;
@@ -219,6 +225,7 @@ void CSendKeys::SendKeyDown(BYTE VKey, WORD NumTimes, bool GenUpMsg, bool bDelay
     {
       if (bDelay)
         CarryDelay();
+
       // snippet based on:
       // http://www.codeproject.com/cpp/togglekeys.asp
       if (dwVersion < 0x80000000)
@@ -231,8 +238,7 @@ void CSendKeys::SendKeyDown(BYTE VKey, WORD NumTimes, bool GenUpMsg, bool bDelay
         // Win98 and later
         if ( ((DWORD)(HIBYTE(LOWORD(dwVersion))) >= 10) )
         {
-          // Define _WIN32_WINNT > 0x0400
-          // to compile
+          // Define _WIN32_WINNT > 0x0400 to compile
           INPUT input[2] = {0};
           input[0].type = input[1].type = INPUT_KEYBOARD;
           input[0].ki.wVk = input[1].ki.wVk = VKey;
@@ -273,12 +279,14 @@ void CSendKeys::SendKeyDown(BYTE VKey, WORD NumTimes, bool GenUpMsg, bool bDelay
   }
 }
 
+//-------------------------------------------------------------------------
 // Checks whether a bit is set
 bool CSendKeys::BitSet(BYTE BitTable, UINT BitMask)
 {
   return BitTable & BitMask ? true : false;
 }
 
+//-------------------------------------------------------------------------
 // Sends a single key
 void CSendKeys::SendKey(WORD MKey, WORD NumTimes, bool GenDownMsg)
 {
@@ -306,6 +314,7 @@ void CSendKeys::SendKey(WORD MKey, WORD NumTimes, bool GenDownMsg)
     SendKeyUp(VK_MENU);
 }
 
+//-------------------------------------------------------------------------
 // Implements a simple binary search to locate special key name strings
 WORD CSendKeys::StringToVKey(LPCTSTR KeyString, int &idx)
 {
@@ -313,6 +322,7 @@ WORD CSendKeys::StringToVKey(LPCTSTR KeyString, int &idx)
   int  Bottom = 0, 
        Top = MaxSendKeysRecs,
        Middle = (Bottom + Top) / 2;
+
   WORD retval = INVALIDKEY;
 
   idx    = -1;
@@ -341,6 +351,7 @@ WORD CSendKeys::StringToVKey(LPCTSTR KeyString, int &idx)
   return retval;
 }
 
+//-------------------------------------------------------------------------
 // Releases all shift keys (keys that can be depressed while other keys are being pressed
 // If we are in a modifier group this function does nothing
 void CSendKeys::PopUpShiftKeys()
@@ -359,6 +370,7 @@ void CSendKeys::PopUpShiftKeys()
   }
 }
 
+//-------------------------------------------------------------------------
 // Sends a key string
 bool CSendKeys::SendKeys(LPCTSTR KeysString, bool Wait)
 {
@@ -378,149 +390,150 @@ bool CSendKeys::SendKeys(LPCTSTR KeysString, bool Wait)
   {
     switch (ch)
     {
-    // begin modifier group
-    case _TXCHAR('('):
-      m_bUsingParens = true;
-      break;
+      // begin modifier group
+      case _TXCHAR('('):
+        m_bUsingParens = true;
+        break;
 
-    // end modifier group
-    case _TXCHAR(')'):
-      m_bUsingParens = false;
-      PopUpShiftKeys(); // pop all shift keys when we finish a modifier group close
-      break;
+      // end modifier group
+      case _TXCHAR(')'):
+        m_bUsingParens = false;
+        PopUpShiftKeys(); // pop all shift keys when we finish a modifier group close
+        break;
 
-    // ALT key
-    case _TXCHAR('%'):
-      m_bAltDown = true;
-      SendKeyDown(VK_MENU, 1, false);
-      break;
+      // ALT key
+      case _TXCHAR('%'):
+        m_bAltDown = true;
+        SendKeyDown(VK_MENU, 1, false);
+        break;
 
-    // SHIFT key
-    case _TXCHAR('+'):
-      m_bShiftDown = true;
-      SendKeyDown(VK_SHIFT, 1, false);
-      break;
+      // SHIFT key
+      case _TXCHAR('+'):
+        m_bShiftDown = true;
+        SendKeyDown(VK_SHIFT, 1, false);
+        break;
 
-    // CTRL key
-    case _TXCHAR('^'):
-      m_bControlDown = true;
-      SendKeyDown(VK_CONTROL, 1, false);
-      break;
+      // CTRL key
+      case _TXCHAR('^'):
+        m_bControlDown = true;
+        SendKeyDown(VK_CONTROL, 1, false);
+        break;
 
-    // WINKEY (Left-WinKey)
-    case '@':
-      m_bWinDown = true;
-      SendKeyDown(VK_LWIN, 1, false);
-      break;
+      // WINKEY (Left-WinKey)
+      case '@':
+        m_bWinDown = true;
+        SendKeyDown(VK_LWIN, 1, false);
+        break;
 
-    // enter
-    case _TXCHAR('~'):
-      SendKeyDown(VK_RETURN, 1, true);
-      PopUpShiftKeys();
-      break;
+      // enter
+      case _TXCHAR('~'):
+        SendKeyDown(VK_RETURN, 1, true);
+        PopUpShiftKeys();
+        break;
 
-    // begin special keys
-    case _TXCHAR('{'):
-      {
-        LPTSTR p = pKey+1; // skip past the beginning '{'
-        size_t t;
-
-        // find end of close
-        while (*p && *p != _TXCHAR('}'))
-          p++;
-
-        t = p - pKey;
-        // special key definition too big?
-        if (t > sizeof(KeyString))
-          return false;
-
-        // Take this KeyString into local buffer
-        _tcsncpy(KeyString, pKey+1, t);
-
-        KeyString[t-1] = _TXCHAR('\0');
-        keyIdx = -1;
-
-        pKey += t; // skip to next keystring
-
-        // Invalidate key
-        MKey = INVALIDKEY;
-
-        // sending arbitrary vkeys?
-        if (_tcsnicmp(KeyString, _T("VKEY"), 4) == 0)
+      // begin special keys
+      case _TXCHAR('{'):
         {
-          p = KeyString + 4;
-          MKey = _ttoi(p);
-        }
-        else if (_tcsnicmp(KeyString, _T("BEEP"), 4) == 0)
-        {
-          p = KeyString + 4 + 1;
-          LPTSTR p1 = p;
-          DWORD frequency, delay;
+          LPTSTR p = pKey+1; // skip past the beginning '{'
+          size_t t;
 
-          if ((p1 = _tcsstr(p, _T(" "))) != NULL)
+          // find end of close
+          while (*p && *p != _TXCHAR('}'))
+            p++;
+
+          t = p - pKey;
+          // special key definition too big?
+          if (t > sizeof(KeyString))
+            return false;
+
+          // Take this KeyString into local buffer
+          _tcsncpy(KeyString, pKey+1, t);
+
+          KeyString[t-1] = _TXCHAR('\0');
+          keyIdx = -1;
+
+          pKey += t; // skip to next keystring
+
+          // Invalidate key
+          MKey = INVALIDKEY;
+
+          // sending arbitrary vkeys?
+          if (_tcsnicmp(KeyString, _T("VKEY"), 4) == 0)
           {
-            *p1++ = _TXCHAR('\0');
-            frequency = _ttoi(p);
-            delay = _ttoi(p1);
-            ::Beep(frequency, delay);
+            p = KeyString + 4;
+            MKey = _ttoi(p);
           }
-        }
-        // Should activate a window?
-        else if (_tcsnicmp(KeyString, _T("APPACTIVATE"), 11) == 0)
-        {
-          p = KeyString + 11 + 1;
-          AppActivate(p);
-        }
-        // want to send/set delay?
-        else if (_tcsnicmp(KeyString, _T("DELAY"), 5) == 0)
-        {
-          // Advance to parameters
-          p = KeyString + 5;
-          // set "sleep factor"
-          if (*p == _TXCHAR('='))
-            m_nDelayAlways = _ttoi(p + 1); // Take number after the '=' character
-          else
-            // set "sleep now"
-            m_nDelayNow = _ttoi(p);
-        }
-        // not command special keys, then process as keystring to VKey
-        else
-        {
-          MKey = StringToVKey(KeyString, keyIdx);
-          // Key found in table
-          if (keyIdx != -1)
+          else if (_tcsnicmp(KeyString, _T("BEEP"), 4) == 0)
           {
-            NumTimes = 1;
+            p = KeyString + 4 + 1;
+            LPTSTR p1 = p;
+            DWORD frequency, delay;
 
-            // Does the key string have also count specifier?
-            t = _tcslen(KeyNames[keyIdx].keyName);
-            if (_tcslen(KeyString) > t)
+            p1 = _tcschr(p, _TXCHAR(' '));
+            if (p1 != NULL)
             {
-              p = KeyString + t;
-              // Take the specified number of times
-              NumTimes = _ttoi(p);
+              *p1++ = _TXCHAR('\0');
+              frequency = _ttoi(p);
+              delay = _ttoi(p1);
+              ::Beep(frequency, delay);
             }
+          }
+          // Should activate a window?
+          else if (_tcsnicmp(KeyString, _T("APPACTIVATE"), 11) == 0)
+          {
+            p = KeyString + 11 + 1;
+            AppActivate(p);
+          }
+          // want to send/set delay?
+          else if (_tcsnicmp(KeyString, _T("DELAY"), 5) == 0)
+          {
+            // Advance to parameters
+            p = KeyString + 5;
+            // set "sleep factor"
+            if (*p == _TXCHAR('='))
+              m_nDelayAlways = _ttoi(p + 1); // Take number after the '=' character
+            else
+              // set "sleep now"
+              m_nDelayNow = _ttoi(p);
+          }
+          // not command special keys, then process as keystring to VKey
+          else
+          {
+            MKey = StringToVKey(KeyString, keyIdx);
+            // Key found in table
+            if (keyIdx != -1)
+            {
+              NumTimes = 1;
 
-            if (KeyNames[keyIdx].normalkey)
-              MKey = ::VkKeyScan(KeyNames[keyIdx].VKey);
+              // Does the key string have also count specifier?
+              t = _tcslen(KeyNames[keyIdx].keyName);
+              if (_tcslen(KeyString) > t)
+              {
+                p = KeyString + t;
+                // Take the specified number of times
+                NumTimes = _ttoi(p);
+              }
+
+              if (KeyNames[keyIdx].normalkey)
+                MKey = ::VkKeyScan(KeyNames[keyIdx].VKey);
+            }
+          }
+
+          // A valid key to send?
+          if (MKey != INVALIDKEY)
+          {
+            SendKey(MKey, NumTimes, true);
+            PopUpShiftKeys();
           }
         }
+        break;
 
-        // A valid key to send?
-        if (MKey != INVALIDKEY)
-        {
-          SendKey(MKey, NumTimes, true);
-          PopUpShiftKeys();
-        }
-      }
-      break;
-
-      // a normal key was pressed
-    default:
-      // Get the VKey from the key
-      MKey = ::VkKeyScan(ch);
-      SendKey(MKey, 1, true);
-      PopUpShiftKeys();
+        // a normal key was pressed
+      default:
+        // Get the VKey from the key
+        MKey = ::VkKeyScan(ch);
+        SendKey(MKey, 1, true);
+        PopUpShiftKeys();
     }
     pKey++;
   }
@@ -530,21 +543,33 @@ bool CSendKeys::SendKeys(LPCTSTR KeysString, bool Wait)
   return true;
 }
 
+//-------------------------------------------------------------------------
 bool CSendKeys::AppActivate(HWND wnd)
 {
   if (wnd == NULL)
     return false;
 
-  ::SendMessage(wnd, WM_SYSCOMMAND, SC_HOTKEY, (LPARAM) wnd);
-  ::SendMessage(wnd, WM_SYSCOMMAND, SC_RESTORE, (LPARAM) wnd);
+  ::SendMessage(
+    wnd, 
+    WM_SYSCOMMAND, 
+    SC_HOTKEY, 
+    (LPARAM) wnd);
+
+  ::SendMessage(
+    wnd, 
+    WM_SYSCOMMAND, 
+    SC_RESTORE, 
+    (LPARAM) wnd);
   
   ::ShowWindow(wnd, SW_SHOW);
+
   ::SetForegroundWindow(wnd);
   ::SetFocus(wnd);
 
   return true;
 }
 
+//-------------------------------------------------------------------------
 BOOL CALLBACK CSendKeys::enumwindowsProc(HWND hwnd, LPARAM lParam)
 {
   enumwindow_t *t = (enumwindow_t *) lParam;
@@ -567,14 +592,14 @@ BOOL CALLBACK CSendKeys::enumwindowsProc(HWND hwnd, LPARAM lParam)
   if (wclass)
   {
     TCHAR szClass[300];
-    if (::GetClassName(hwnd, szClass, sizeof(szClass)))
+    if (::GetClassName(hwnd, szClass, _countof(szClass)))
       bMatch |= (_tcsstr(szClass, wclass) != 0);
   }
 
   if (wtitle)
   {
     TCHAR szTitle[300];
-    if (::GetWindowText(hwnd, szTitle, sizeof(szTitle)))
+    if (::GetWindowText(hwnd, szTitle, _countof(szTitle)))
       bMatch |= (_tcsstr(szTitle, wtitle) != 0);
   }
 
@@ -586,6 +611,7 @@ BOOL CALLBACK CSendKeys::enumwindowsProc(HWND hwnd, LPARAM lParam)
   return true;
 }
 
+//-------------------------------------------------------------------------
 // Searchs and activates a window given its title or class name
 bool CSendKeys::AppActivate(LPCTSTR WindowTitle, LPCTSTR WindowClass)
 {
@@ -634,6 +660,7 @@ bool CSendKeys::AppActivate(LPCTSTR WindowTitle, LPCTSTR WindowClass)
   return AppActivate(w);
 }
 
+//-------------------------------------------------------------------------
 // Carries the required delay and clears the m_nDelaynow value
 void CSendKeys::CarryDelay()
 {

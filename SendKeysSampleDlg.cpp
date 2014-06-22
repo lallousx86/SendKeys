@@ -91,6 +91,7 @@ BEGIN_MESSAGE_MAP(CSendKeysSampleDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON3, OnButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, OnButton4)
 	//}}AFX_MSG_MAP
+  ON_BN_CLICKED(IDC_BUTTON5, &CSendKeysSampleDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -190,16 +191,19 @@ void CSendKeysSampleDlg::OnOK()
   m_sk.SendKeys((LPCTSTR)m_edtKeyStrokes);
 }
 
+//-------------------------------------------------------------------------
 void CSendKeysSampleDlg::OnButton2() 
 {
   m_sk.SendKeys(_T("{DELAY=200}@rnotepad~{appactivate Notepad}{DELAY 100}Hello!!!!%ha{BEEP 1999 1000}{ESC}% {DOWN 5}"));
 }
 
+//-------------------------------------------------------------------------
 void CSendKeysSampleDlg::OnButton1() 
 {
-  m_sk.SendKeys(_T("{DELAY=200}@rcalc~{DELAY 100}{appactivate Calculator}1500{PLUS}1*600~"));
+  m_sk.SendKeys(_T("{DELAY=200}@rcalc~{DELAY 100}{appactivate Calculator}%11500{PLUS}1*600~"));
 }
 
+//-------------------------------------------------------------------------
 void CSendKeysSampleDlg::OnButton3() 
 {
   m_sk.SendKeys(_T("{DELAY=200}@rcmd~{DELAY 500}dir/w~cd ..~dir/w~title I love Cmd line!~cd\\~exit"));
@@ -210,7 +214,14 @@ void CSendKeysSampleDlg::OnButton4()
   MessageBox(_T("turn off all LEDs and watch!"));
   m_sk.SetDelay(200);
   for (int i=0;i<5;i++)
-  {
     m_sk.SendKeys(_T("{NUMLOCK}{CAPSLOCK}{SCROLL}{SCROLL}{CAPSLOCK}{NUMLOCK}"));
-  }
+}
+
+//-------------------------------------------------------------------------
+void CSendKeysSampleDlg::OnBnClickedButton5()
+{
+  MessageBox(
+    _TEXT("SendKeys library sample (c) Elias Bachaalany <lallousz-x86@yahoo.com>"),
+    _TEXT("Send keys"),
+    MB_OK);
 }

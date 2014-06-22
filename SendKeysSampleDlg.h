@@ -51,6 +51,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 private:
 	CSendKeys m_sk;
+public:
+  afx_msg void OnBnClickedButton5();
 };
 
 //{{AFX_INSERT_LOCATION}}

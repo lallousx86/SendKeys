@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by SendKeysSample.rc
 //
 #define IDM_ABOUTBOX                    0x0010
@@ -14,6 +14,7 @@
 #define IDC_BUTTON2                     1004
 #define IDC_BUTTON3                     1009
 #define IDC_BUTTON4                     1010
+#define IDC_BUTTON5                     1011
 
 // Next default values for new objects
 // 
